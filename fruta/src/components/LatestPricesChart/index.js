@@ -13,8 +13,15 @@ const LatestPricesChart = (props) => {
         height={50}
         options={{
           maintainAspectRatio: false,
+          layout: {
+            padding: {
+              left: 10,
+              right: 10,
+              top: 10,
+            }
+          },
           elements: {
-            point: { radius: 0 }
+            point: { radius: 5 }
           },
           showLine: false,
           legend: {
@@ -39,7 +46,6 @@ const LatestPricesChart = (props) => {
             }],
             yAxes: [{
               ticks: {
-                beginAtZero: true,
               },
               display: false,
               gridLines: {

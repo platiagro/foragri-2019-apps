@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import './style.scss';
 
-import { Row, Col, Button, Modal, Input, Select, Form } from 'antd';
+import { Row, Col, Button, Modal, Input, Select, Form, message } from 'antd';
 
 import UrlInput from '../UrlInput';
 import MeasuresChart from '../MeasuresChart';
@@ -42,7 +42,7 @@ class MachineContent extends React.Component {
 
   handleOk = () => {
     this.setState({ isModalVisible: false });
-    this.props.onUrlSet(this.state.url);
+    this.handleUrlSet(this.state.url);
   }
 
   handleCancel = () => {
@@ -161,6 +161,8 @@ class MachineContent extends React.Component {
         measuresData: measuresData,
         failureData: failureData
       });
+    } else {
+      message.error('Não foi possível acessar a URL informada.');
     }
   }
 
@@ -182,7 +184,7 @@ class MachineContent extends React.Component {
                 cancelText='Cancelar'
                 okButtonProps={{ className: 'orange' }}
               >
-                <Input placeholder='URL' onChange={e => this.setUrl(e.target.value)} value={url} onPressEnter={this.handleOk} />
+                <Input placeholder='URL' onChange={e => this.setState({url: e.target.value})} value={url} onPressEnter={this.handleOk} />
               </Modal>
 
               <Form layout='inline'>

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import './style.scss';
 
-import { Row, Col, Button, Modal, Input, Select, Form } from 'antd';
+import { Row, Col, Button, Modal, Input, Select, Form, message } from 'antd';
 
 import UrlInput from '../UrlInput';
 import LatestPricesChart from '../LatestPricesChart';
@@ -55,7 +55,7 @@ class FruitContent extends React.Component {
 
   handleOk = () => {
     this.setState({ isModalVisible: false });
-    this.props.onUrlSet(this.state.url);
+    this.handleUrlSet(this.state.url);
   }
 
   handleCancel = () => {
@@ -133,19 +133,28 @@ class FruitContent extends React.Component {
       });
 
       const priceList = this.state.fruitIndexList.map(index => {
-        return this.predictionList[index][this.predictionList[index].length - 1].toFixed(2).replace('.', ',');
+        if (this.predictionList[index].length > 0) {
+          return this.predictionList[index][this.predictionList[index].length - 1].toFixed(2).replace('.', ',');
+        } else {
+          return '??';
+        }
       });
 
       const predictionData = this.state.fruitIndexList.map(index => {
         return {
-          labels: this.predictionList[index].slice(-15).map(data => data[0].find(d => /\d+-\d+-\d/.test(d))),
+          labels: this.dataList[index].slice(-15).map(data => data.find(d => /\d+-\d+-\d/.test(d))),
           datasets: [{
-            data: this.predictionList[index].slice(-15).map(p => p[index]),
+            data: this.predictionList[index].slice(-15).map(p => p),
             fill: true,
-            backgroundColor: '#975fe4'
+            backgroundColor: '#975fe4',
+            borderColor: '#975fe4',
+            pointBackgroundColor: 'rgba(0,0,0,0.0)',
+            pointBorderColor: 'rgba(0,0,0,0.0)'
           }]
         };
       });
+
+      console.log(predictionData);
 
       const aggregateData = { labels: [], datasets: [] };
       aggregateData.labels = this.state.fruitList;
@@ -155,15 +164,15 @@ class FruitContent extends React.Component {
         data: this.state.fruitList.map((fruit, index) => {
           const fruitIndex = this.state.fruitIndexList[index];
           // Predicted_price * Producao_estimada
-          return this.predictionList[fruitIndex].slice(-15).reduce((sum, p, idx) => sum + p * this.dataList[fruitIndex][idx][3], 0);
+          return this.predictionList[fruitIndex].slice(-15).reduce((sum, p, idx) => sum + p * this.dataList[fruitIndex][idx][4], 0) / 2.0;
         })
       }, {
         label: 'Custo acumulado',
         backgroundColor: '#550055',
         data: this.state.fruitList.map((fruit, index) => {
           const fruitIndex = this.state.fruitIndexList[index];
-          // defensivos_unidade_hc * 10
-          return this.dataList[fruitIndex].slice(-15).reduce((sum, p) => sum + p[11] * 10, 0);
+          // defensivos_unidade_hc * 5
+          return this.dataList[fruitIndex].slice(-15).reduce((sum, p) => sum + p[12] * 10, 0);
         })
       }]);
 
@@ -172,6 +181,8 @@ class FruitContent extends React.Component {
         predictionData: predictionData,
         aggregateData: aggregateData
       });
+    } else {
+      message.error('Não foi possível acessar a URL informada.');
     }
   }
 
@@ -193,7 +204,7 @@ class FruitContent extends React.Component {
                 cancelText='Cancelar'
                 okButtonProps={{className: 'green'}}
               >
-                <Input placeholder='URL' onChange={e => this.setUrl(e.target.value)} value={url} onPressEnter={this.handleOk}/>
+                <Input placeholder='URL' onChange={e => this.setState({url: e.target.value})} value={url} onPressEnter={this.handleOk}/>
               </Modal>
 
               <Form layout='inline'>
