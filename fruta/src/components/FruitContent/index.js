@@ -39,8 +39,8 @@ class FruitContent extends React.Component {
       predictionData: [], //prediction data as expected
       aggregateData: {}
     };
-    this.dataList = [];
-    this.predictionList = []; //prediction history for all fruits
+    this.dataList = new Array(fruits.length).fill(null).map(n => []);
+    this.predictionList = new Array(fruits.length).fill(null).map(n => []);
   }
 
   async componentWillUnmount() {
@@ -62,16 +62,46 @@ class FruitContent extends React.Component {
     this.setState({ isModalVisible: false });
   }
 
-  setUrl = (url) => {
+  handleUrlSet = (url) => {
+    const { data } = this.props;
+
+    this.setState({ url: url });
+
     if (this.interval) {
       clearInterval(this.interval);
     }
-    this.setState({ url: url });
-    if (url) {
-      let row = 0;
-      this.postData(url, row, row += 40);
-      this.interval = setInterval(() => this.postData(url, row, row += 40), 20000);
+
+    this.dataList = new Array(fruits.length).fill(null).map(n => []);
+    this.predictionList = new Array(fruits.length).fill(null).map(n => []);
+
+    let i = 0;
+    let date = data[i]["Data"];
+    this.postData(url, date);
+    // Finds next date
+    while (++i < data.length) {
+      if (data[i]["Data"] !== date) {
+        date = data[i]["Data"];
+        break;
+      }
     }
+
+    // Every 4 seconds, sends data from a date for prediction
+    this.interval = setInterval(() => {
+      this.postData(url, date);
+      // Finds next date
+      while (++i < data.length) {
+        if (data[i]["Data"] !== date) {
+          date = data[i]["Data"];
+          break;
+        }
+      }
+      // After all data has been sent,
+      // resets counter and starts all over again
+      if (i === data.length) {
+        i = 0;
+        date = data[i]["Data"];
+      }
+    }, 4000);
   }
 
   handleFruitSelected = (fruitList) => {
@@ -84,9 +114,9 @@ class FruitContent extends React.Component {
     });
   }
 
-  async postData(url, start, end) {
+  async postData(url, date) {
     const { data } = this.props;
-    const ndarray = data.slice(start % data.length, end % data.length).map(Object.values);
+    const ndarray = data.filter(d => d["Data"] === date).map(Object.values);
     const names = Object.keys(data[0]);
     const response = await post(
       url, {
@@ -96,21 +126,21 @@ class FruitContent extends React.Component {
       }
     });
     if (response.status === 200) {
-      this.dataList = [...this.dataList, ndarray];
-      this.predictionList = [...this.predictionList, response.data.data.ndarray];
-
-      const priceList = this.state.fruitIndexList.map(index => {
-        return this.predictionList[this.predictionList.length - 1][index].toFixed(2).replace('.', ',');
+      ndarray.forEach((arr, idx) => {
+      const fruitIndex = fruits.findIndex(fruit => fruit === arr[1]);
+        this.dataList[fruitIndex].push(arr);
+        this.predictionList[fruitIndex].push(response.data.data.ndarray[idx]);
       });
 
-      const latestData = this.dataList.slice(-15);
-      const latestPrediction = this.predictionList.slice(-15);
+      const priceList = this.state.fruitIndexList.map(index => {
+        return this.predictionList[index][this.predictionList[index].length - 1].toFixed(2).replace('.', ',');
+      });
 
       const predictionData = this.state.fruitIndexList.map(index => {
         return {
-          labels: latestData.map(data => data[0].find(d => /\d+-\d+-\d/.test(d))),
+          labels: this.predictionList[index].slice(-15).map(data => data[0].find(d => /\d+-\d+-\d/.test(d))),
           datasets: [{
-            data: latestPrediction.map(p => p[index]),
+            data: this.predictionList[index].slice(-15).map(p => p[index]),
             fill: true,
             backgroundColor: '#975fe4'
           }]
@@ -125,7 +155,7 @@ class FruitContent extends React.Component {
         data: this.state.fruitList.map((fruit, index) => {
           const fruitIndex = this.state.fruitIndexList[index];
           // Predicted_price * Producao_estimada
-          return latestPrediction.reduce((sum, p, idx) => sum + p[fruitIndex] * latestData[idx][fruitIndex][3], 0);
+          return this.predictionList[fruitIndex].slice(-15).reduce((sum, p, idx) => sum + p * this.dataList[fruitIndex][idx][3], 0);
         })
       }, {
         label: 'Custo acumulado',
@@ -133,7 +163,7 @@ class FruitContent extends React.Component {
         data: this.state.fruitList.map((fruit, index) => {
           const fruitIndex = this.state.fruitIndexList[index];
           // defensivos_unidade_hc * 10
-          return latestData.reduce((sum, p) => sum + p[fruitIndex][11] * 10, 0);
+          return this.dataList[fruitIndex].slice(-15).reduce((sum, p) => sum + p[11] * 10, 0);
         })
       }]);
 
@@ -150,7 +180,7 @@ class FruitContent extends React.Component {
     return (
       <>
         {url === '' ? (
-          <UrlInput theme='green' onUrlSet={this.setUrl} />
+          <UrlInput theme='green' onUrlSet={this.handleUrlSet} />
         ) : (
             <>
               <Modal
