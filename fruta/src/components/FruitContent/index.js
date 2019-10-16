@@ -255,7 +255,7 @@ class FruitContent extends React.Component {
               </Row>
               <Row>
                 <Col span={24}>
-                  <div className='white-box' style={{height: 450}}>
+                  <div className='white-box' style={{minHeight: 450, height: 'auto',display: 'flex'}}>
                     <Col span={16}>
                       <span style={{fontWeight: 'bold'}}>Valor Agregado</span>
                       {fruitList.length > 0 && <AggregatePricesChart data={aggregateData} />}
