@@ -1,0 +1,9 @@
+
+Servidor divulgado pela DOJOT
+
+curl -X PUT http://10.50.11.147:8000/device/72269c/actuate -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJ4TlF0MjFtZFB3REp5YzRhRmhuWVlUTWlaZlBZR1lBMiIsImlhdCI6MTU3MTE0MTcyNCwiZXhwIjoxNTcxMTQyMTQ0LCJwcm9maWxlIjoiYWRtaW4iLCJncm91cHMiOlsxXSwidXNlcmlkIjoxLCJqdGkiOiJkYjNkOGEzYzY2OTE1NGQ1ZTA0YTZjOTc5YWEwMGZmMCIsInNlcnZpY2UiOiJhZG1pbiIsInVzZXJuYW1lIjoiYWRtaW4ifQ.nzbY5bH4dwln8luyyr4lAMH1ZCwKsLOlCQWlBfQYpYo" -H "Content-Type: application/json" -d '{"attrs": { "url" : "http://10.50.11.180:31380/seldon/kubeflow/irrigacao-regression-270ad552/api/v0.1/predictions"}}'
+
+
+//Meu servidor local
+curl -X PUT http://10.50.11.147:8000/device/72269c/actuate -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJ4TlF0MjFtZFB3REp5YzRhRmhuWVlUTWlaZlBZR1lBMiIsImlhdCI6MTU3MTE0MTcyNCwiZXhwIjoxNTcxMTQyMTQ0LCJwcm9maWxlIjoiYWRtaW4iLCJncm91cHMiOlsxXSwidXNlcmlkIjoxLCJqdGkiOiJkYjNkOGEzYzY2OTE1NGQ1ZTA0YTZjOTc5YWEwMGZmMCIsInNlcnZpY2UiOiJhZG1pbiIsInVzZXJuYW1lIjoiYWRtaW4ifQ.nzbY5bH4dwln8luyyr4lAMH1ZCwKsLOlCQWlBfQYpYo" -H "Content-Type: application/json" -d '{"attrs": { "url" : "http://localhost:5000/sensores"}}'
+
